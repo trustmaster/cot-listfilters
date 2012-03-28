@@ -38,4 +38,7 @@ if ($o && $p)
 
 $filters && list($sqlfilters, $sqlparams) = listfilter_build($filters);
 
+$cats = cot_import('cats', 'G', 'TXT');
+$sqlcats = listfilter_build_cats($c, $cats);
+
 ?>

@@ -38,7 +38,9 @@ correct parameters for the filter. The arguments are filter type (see above),
 field name (database column name without 'page_') and the value to apply. An 
 example:
 
+```php
     listfilter_url('eq', 'exttype', 'modules')
+```
 
 Assuming we're displaying the 'extensions' category, this will return:
 
@@ -54,14 +56,46 @@ exact same arguments as listfilter_url().
 
 Here's a complete example that uses these functions as CoTemplate callbacks:
 
+```html
     <li><a href="{PHP|listfilter_url('eq', 'exttype')}"<!-- IF {PHP|listfilter_active('eq', 'exttype')} --> class="selected"<!-- ENDIF -->>{PHP.L.All}</a></li>
     <li><a href="{PHP|listfilter_url('eq', 'exttype', 'modules')}"<!-- IF {PHP|listfilter_active('eq', 'exttype', 'modules')} --> class="selected"<!-- ENDIF -->>{PHP.L.Modules}</a></li>
     <li><a href="{PHP|listfilter_url('eq', 'exttype', 'plugins')}"<!-- IF {PHP|listfilter_active('eq', 'exttype', 'plugins')} --> class="selected"<!-- ENDIF -->>{PHP.L.Plugins}</a></li>
+```
 
 As you see this filter has three options: All, Modules and Plugins. In this case 
 'All' simply disables the filter. It's not a requirement to include a 'disable' 
 link, because clicking an active filter will disable it too (like a toggle 
 switch).
+
+If you want to link to filtered list in other parts of your site such as header.tpl,
+you need to specify category code as the 4th parameter of listfilter_url():
+
+```php
+    listfilter_url('eq', 'exttype', 'modules', 'extensions')
+```
+
+There is a 5th parameter which can be used to include custom categories in the selection.
+The simplest case includes all subcategories of the main category in the selection:
+
+```php
+    listfilter_url('eq', 'exttype', 'modules', 'extensions', '*')
+```
+
+Alternatively, you can specify a custom list of comma separated category codes:
+
+```php
+    listfilter_url('eq', 'exttype', 'modules', 'extensions', 'administration,tools')
+```
+
+Please notice that there are no spaces in the 5th argument. You can also select
+children of some of the categories in the list using asterisk character:
+
+```php
+    listfilter_url('eq', 'exttype', 'modules', 'extensions', 'administration*,tools')
+```
+
+This specific filter will select all modules from administration category and all of
+its subcategories, from tools category and will use the template of extensions cat.
 
 ### Using a form
 
@@ -96,7 +130,15 @@ Here's the arguments explained:
 
 Your form should point to the current list URL and use GET as method:
 
+```html
     <form action="{PHP|listfilters_plainurl()}" method="GET">
+```
+
+The form can be processed by a custom category too:
+
+```
+    <form action="{PHP|cot_url('page', 'c=news')}" method="GET">
+```
 
 ### Other helpers
 

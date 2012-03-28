@@ -22,4 +22,12 @@ if ($filters)
 	$list_url = cot_url('page', $list_url_path);
 }
 
+if (!empty($cats) && !empty($sqlcats))
+{
+	// Overwrite category selection with custom filter
+	$where['cat'] = $sqlcats;
+	$list_url_path = array_merge($list_url_path, array('cats' => $cats));
+	$list_url = cot_url('page', $list_url_path);
+}
+
 ?>

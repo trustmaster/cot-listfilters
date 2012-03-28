@@ -117,6 +117,51 @@ function listfilter_build($filters)
 }
 
 /**
+ * Builds special category selection filter based on expression.
+ * Expression is a comma separated list of category codes to select from.
+ * No spaces after comma please. An asterisk means "all sublevels".
+ * 
+ * @param string $c Current main category
+ * @param string $cats Category filter expression
+ * @return string 
+ */
+function listfilter_build_cats($c, $cats)
+{
+	if (empty($cats))
+	{
+		return '';
+	}
+	
+	if ($cats == '*')
+	{
+		// All children flag
+		$categories = implode("','", cot_structure_children('page', $c));
+		return "page_cat IN ('$categories')";
+	}
+	
+	// Multiple categories
+	$cats_list = explode(',', $cats);
+	$categories = array();
+	foreach ($cats_list as $cat)
+	{
+		// Asterisk at the end means all children
+		if ($cat[mb_strlen($cat)-1] == '*')
+		{
+			$all = true;
+			$cat = mb_substr($cat, 0, -1);
+			$categories = array_merge($categories, cot_structure_children('page', $cat, true));
+		}
+		else
+		{
+			$all = false;
+			$categories = array_merge($categories, array($cat));
+		}
+	}
+	$categories = implode("','", array_unique($categories));
+	return "page_cat IN ('$categories')";
+}
+
+/**
  * Returns the number of items that would be shown if the filter were applied.
  * 
  * @param string $type Filter type
@@ -165,9 +210,10 @@ function listfilter_count($type, $field, $value = NULL, $cat = '')
  * @param string $field Field name
  * @param string $value Value to filter on (optional)
  * @param string $cat Custom category code
+ * @param string $catfilter Custom category filter expression
  * @return string
  */
-function listfilter_url($type, $field, $value = NULL, $cat = '')
+function listfilter_url($type, $field, $value = NULL, $cat = '', $catfilter = '')
 {
 	global $list_url_path, $listfilters_cat;
 	if (isset($list_url_path) && is_array($list_url_path) && empty($cat))
@@ -176,7 +222,7 @@ function listfilter_url($type, $field, $value = NULL, $cat = '')
 	}
 	else
 	{
-		$params = empty($cat) ? array('c' => $listfilters_cat) : array('c' => $cat);
+		$params = empty($cat) ? array('c' => $listfilters_cat) : array('c' => $cat, 'cats' => $catfilter);
 	}
 	
 	if ($value === NULL || listfilter_active($type, $field, $value))
