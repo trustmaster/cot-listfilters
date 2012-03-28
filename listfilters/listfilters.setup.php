@@ -5,7 +5,7 @@ Code=listfilters
 Name=List Filters
 Description=Advanced filtering options for page lists
 Version=1.2
-Date=2011-dec-10
+Date=2012-03-28
 Author=Gert Hengeveld
 Copyright=Cotonti Team
 Notes=BSD License
@@ -17,6 +17,7 @@ Lock_members=W12345A
 [END_COT_EXT]
 
 [BEGIN_COT_EXT_CONFIG]
+cat=01:string::articles:Fallback category
 [END_COT_EXT_CONFIG]
 ==================== */
 

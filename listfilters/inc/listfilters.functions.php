@@ -3,7 +3,7 @@
  * List filters API
  * 
  * @package listfilters
- * @version 1.1
+ * @version 1.2
  * @author Gert Hengeveld
  * @copyright (c) Cotonti Team 2011
  * @license BSD
@@ -26,6 +26,13 @@ function listfilter_active($type, $field, $value = NULL)
 	return ($list_url_path['filters'][$type][$field] == $value);
 }
 
+/**
+ * Builds SQL query conditions based on filters
+ * @global CotDB $db
+ * @global string $db_pages
+ * @param array $filters Filters params
+ * @return array
+ */
 function listfilter_build($filters)
 {
 	global $db, $db_pages;
@@ -96,7 +103,7 @@ function listfilter_build($filters)
 			if (!is_array($value)) $value = array($value);
 			foreach ($value as &$val)
 			{
-				$encval = md5($val);
+				$encval = cot_unique();
 				$sqlparams['p'.$encval] = $val;
 				$val = ":p$encval";
 			}
@@ -114,13 +121,18 @@ function listfilter_build($filters)
  * @param string $type Filter type
  * @param string $field Field name
  * @param string $value Value that was filtered on (optional)
+ * @param string $cat Filtered category
  * @return bool
  */
-function listfilter_count($type, $field, $value = NULL)
+function listfilter_count($type, $field, $value = NULL, $cat = '')
 {
-	global $c, $db, $db_pages, $filters, $filterway;
+	global $listfilters_cat, $db, $db_pages, $filters, $filterway;
+	if (empty($cat))
+	{
+		$cat = $listfilters_cat;
+	}
 	$params = array();
-	$categories = implode("','", cot_structure_children('page', $c));
+	$categories = implode("','", cot_structure_children('page', $cat));
 	$where = "WHERE page_cat IN ('$categories')";
 	$GLOBALS['cfg']['display_errors'] = true;
 	if ($value === null)
@@ -151,12 +163,21 @@ function listfilter_count($type, $field, $value = NULL)
  * @param string $type Filter type
  * @param string $field Field name
  * @param string $value Value to filter on (optional)
+ * @param string $cat Custom category code
  * @return string
  */
-function listfilter_url($type, $field, $value = NULL)
+function listfilter_url($type, $field, $value = NULL, $cat = '')
 {
-	global $list_url_path;
-	$params = $list_url_path;
+	global $list_url_path, $listfilters_cat;
+	if (isset($list_url_path) && is_array($list_url_path) && empty($cat))
+	{
+		$params = $list_url_path;
+	}
+	else
+	{
+		$params = empty($cat) ? array('c' => $listfilters_cat) : array('c' => $cat);
+	}
+	
 	if ($value === NULL || listfilter_active($type, $field, $value))
 	{
 		unset($params['filters'][$type][$field]);
