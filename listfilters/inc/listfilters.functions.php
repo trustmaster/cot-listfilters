@@ -12,8 +12,8 @@
 defined('COT_CODE') or die('Wrong URL.');
 
 /**
- * Returns TRUE if the filter is active and meets the provided value.
- * Returns TRUE if the filter is not active, if the last argument is omitted.
+ * Returns TRUE if the filter is active and meets the provided value or the last argument is omitted.
+ * Returns FALSE if the filter is not active or isn't equal to the last argument.
  * 
  * @param string $type Filter type
  * @param string $field Field name
@@ -23,7 +23,8 @@ defined('COT_CODE') or die('Wrong URL.');
 function listfilter_active($type, $field, $value = NULL)
 {
 	global $list_url_path;
-	return ($list_url_path['filters'][$type][$field] == $value);
+	return (is_null($value) && isset($list_url_path['filters'][$type][$field]))
+		|| (!is_null($value) && $list_url_path['filters'][$type][$field] == $value);
 }
 
 /**
