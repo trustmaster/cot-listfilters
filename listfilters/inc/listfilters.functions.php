@@ -18,13 +18,19 @@ defined('COT_CODE') or die('Wrong URL.');
  * @param string $type Filter type
  * @param string $field Field name
  * @param string $value Value that was filtered on (optional)
+ * @param string $catfilter Custom category filter expression
  * @return bool
  */
-function listfilter_active($type, $field, $value = NULL)
+function listfilter_active($type, $field, $value = NULL, $catfilter = '')
 {
 	global $list_url_path;
-	return (is_null($value) && isset($list_url_path['filters'][$type][$field]))
+	$res = (is_null($value) && isset($list_url_path['filters'][$type][$field]))
 		|| (!is_null($value) && $list_url_path['filters'][$type][$field] == $value);
+	if (!empty($catfilter))
+	{
+		$res &= $list_url_path['cats'] == $catfilter;
+	}
+	return $res;
 }
 
 /**
@@ -127,9 +133,10 @@ function listfilter_build($filters)
  */
 function listfilter_build_cats($c, $cats)
 {
+	
 	if (empty($cats))
 	{
-		return '';
+		return empty($c) ? '' : "page_cat = '$c'";
 	}
 	
 	if ($cats == '*')
@@ -168,9 +175,10 @@ function listfilter_build_cats($c, $cats)
  * @param string $field Field name
  * @param string $value Value that was filtered on (optional)
  * @param string $cat Filtered category
+ * @param string $catfilter Custom category filter expression
  * @return bool
  */
-function listfilter_count($type, $field, $value = NULL, $cat = '')
+function listfilter_count($type, $field, $value = NULL, $cat = '', $catfilter = '')
 {
 	global $listfilters_cat, $db, $db_pages, $filters, $filterway;
 	if (empty($cat))
@@ -178,8 +186,7 @@ function listfilter_count($type, $field, $value = NULL, $cat = '')
 		$cat = $listfilters_cat;
 	}
 	$params = array();
-	$categories = implode("','", cot_structure_children('page', $cat));
-	$where = "WHERE page_cat IN ('$categories')";
+	$where = "WHERE " . listfilter_build_cats($cat, $catfilter);
 	$GLOBALS['cfg']['display_errors'] = true;
 	if ($value === null)
 	{
